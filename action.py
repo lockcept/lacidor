@@ -15,7 +15,7 @@ class QuoridorAction:
         self.y = y
 
     def __str__(self):
-        return f"Action: {self.action_type}, X: {self.x}, Y: {self.y}"
+        return f"{self.action_type}, X: {self.x}, Y: {self.y}"
 
     # 클래스 변수를 사용하여 계산 결과를 캐싱
     _all_actions = None

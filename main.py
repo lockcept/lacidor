@@ -20,44 +20,10 @@ class QuoridorGUI(QMainWindow):
 
         self.board = QuoridorBoard()
         self.BOARD_SIZE = self.board.size
-        self.board.action_player(
-            player=1,
-            action=QuoridorAction(action_type=ActionType.WALL_VERTICAL, x=0, y=0),
-        )
-        self.board.action_player(
-            player=2,
-            action=QuoridorAction(action_type=ActionType.WALL_HORIZONTAL, x=0, y=7),
-        )
-        self.board.action_player(
-            player=1,
-            action=QuoridorAction(action_type=ActionType.WALL_HORIZONTAL, x=3, y=0),
-        )
-        self.board.action_player(
-            player=2,
-            action=QuoridorAction(action_type=ActionType.WALL_VERTICAL, x=1, y=1),
-        )
-        self.board.action_player(
-            player=1,
-            action=QuoridorAction(action_type=ActionType.MOVE, x=5, y=0),
-        )
-        self.board.action_player(
-            player=2,
-            action=QuoridorAction(action_type=ActionType.WALL_VERTICAL, x=2, y=0),
-        )
-        self.board.action_player(
-            player=1,
-            action=QuoridorAction(action_type=ActionType.WALL_HORIZONTAL, x=5, y=0),
-        )
 
         for action in QuoridorAction.all_actions():
-            print(action, self.board.is_valid_action(player=1, action=action))
-
-        # print(
-        #     self.board.is_valid_action(
-        #         player=1,
-        #         action=QuoridorAction(action_type=ActionType.WALL_VERTICAL, x=6, y=0),
-        #     ),
-        # )
+            if self.board.is_valid_action(player=1, action=action):
+                print(action)
 
         self.initUI()
 
