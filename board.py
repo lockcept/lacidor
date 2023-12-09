@@ -105,6 +105,24 @@ class QuoridorBoard:
                         ):
                             return True
                     else:
+                        if (
+                            (old_x, y) == enemy_place
+                            and is_wall_empty(head=(old_x, old_y), tail=(old_x, y))
+                            and is_wall_empty(head=(old_x, y), tail=(x, y))
+                            and not is_wall_empty(
+                                head=(old_x, y), tail=(old_x, 2 * y - old_y)
+                            )
+                        ):
+                            return True
+                        if (
+                            (x, old_y) == enemy_place
+                            and is_wall_empty(head=(old_x, old_y), tail=(x, old_y))
+                            and is_wall_empty(head=(x, old_y), tail=(x, y))
+                            and not is_wall_empty(
+                                head=(x, old_y), tail=(2 * x - old_x, old_y)
+                            )
+                        ):
+                            return True
                         return False
 
                 return False
