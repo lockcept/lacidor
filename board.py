@@ -55,6 +55,28 @@ class QuoridorBoard:
         if player not in (1, 2):
             raise ValueError("플레이어 번호는 1 또는 2여야 합니다.")
 
+        def is_wall_empty(head, tail):
+            (head_x, head_y) = head
+            (tail_x, tail_y) = tail
+            if abs(head_x - tail_x) + abs(head_y - tail_y) != 1:
+                return False
+            is_horizontal = abs(head_x - tail_x) == 1
+
+            x = min(head_x, tail_x)
+            y = min(head_y, tail_y)
+
+            if is_horizontal:
+                if (x, y) in self.vertical_walls:
+                    return False
+                if (x, y - 1) in self.vertical_walls:
+                    return False
+            else:
+                if (x, y) in self.horizontal_walls:
+                    return False
+                if (x - 1, y) in self.horizontal_walls:
+                    return False
+            return True
+
         if action.action_type == ActionType.MOVE:
             x, y = action.x, action.y
             if not (0 <= x < self.size) or not (0 <= y < self.size):
@@ -70,21 +92,26 @@ class QuoridorBoard:
 
             if (abs(old_x - x) + abs(old_y - y)) != 1:
                 # 이동 거리가 1이 아닌 경우 뛰어넘기 검사
+                if (abs(old_x - x) + abs(old_y - y)) == 2:
+                    if abs(old_x - x) == 2 or abs(old_y - y) == 2:
+                        center_x = (old_x + x) // 2
+                        center_y = (old_y + y) // 2
+                        if (
+                            (center_x, center_y) == enemy_place
+                            and is_wall_empty(
+                                head=(old_x, old_y), tail=(center_x, center_y)
+                            )
+                            and is_wall_empty(head=(center_x, center_y), tail=(x, y))
+                        ):
+                            return True
+                    else:
+                        return False
+
                 return False
 
-            # 정상적인 이동
-            if x != old_x:
-                wall_x = min(old_x, x)
-                if (wall_x, y) in self.vertical_walls:
-                    return False
-                if (wall_x, y - 1) in self.vertical_walls:
-                    return False
-            if y != old_y:
-                wall_y = min(old_y, y)
-                if (x, wall_y) in self.horizontal_walls:
-                    return False
-                if (x - 1, wall_y) in self.horizontal_walls:
-                    return False
+            # 정상적인 이동 벽 검사
+            if not is_wall_empty(head=(old_x, old_y), tail=(x, y)):
+                return False
 
         elif action.action_type == ActionType.WALL_VERTICAL:
             if self.player_wall_counts[player] == 0:
