@@ -13,6 +13,44 @@ class QuoridorBoard:
         self.vertical_walls = set()
         self.horizontal_walls = set()
 
+    def is_opened_walls(self, vertical_walls, horizontal_walls, player_positions):
+        target_y = {1: self.size - 1, 2: 0}
+        visited = set()
+
+        def dfs(player, x, y):
+            if y == target_y[player]:
+                return True
+
+            visited.add((x, y))
+
+            for dx, dy in [(0, 1), (0, -1), (1, 0), (-1, 0)]:
+                new_x, new_y = x + dx, y + dy
+                if (
+                    (new_x, new_y) not in visited
+                    and 0 <= new_x < self.size
+                    and 0 <= new_y < self.size
+                ):
+                    if (
+                        dx == 0
+                        and not (x, min(y, new_y)) in horizontal_walls
+                        and not (x - 1, min(y, new_y)) in horizontal_walls
+                    ) or (
+                        dy == 0
+                        and not (min(x, new_x), y) in vertical_walls
+                        and not (min(x, new_x), y - 1) in vertical_walls
+                    ):
+                        if dfs(player, new_x, new_y):
+                            return True
+
+            return False
+
+        for player, (x, y) in player_positions.items():
+            visited.clear()
+            if not dfs(player, x, y):
+                return False
+
+        return True
+
     def is_valid_action(self, player, action: QuoridorAction):
         if player not in (1, 2):
             raise ValueError("플레이어 번호는 1 또는 2여야 합니다.")
@@ -28,20 +66,24 @@ class QuoridorBoard:
                 return False
 
             old_x, old_y = self.player_positions[player]
+            enemy_place = self.player_positions[3 - player]
+
             if (abs(old_x - x) + abs(old_y - y)) != 1:
+                # 이동 거리가 1이 아닌 경우 뛰어넘기 검사
                 return False
-                # todo: 사실 뛰어넘기가 가능함
 
+            # 정상적인 이동
             if x != old_x:
-                if (min(old_x, x), y) in self.vertical_walls:
+                wall_x = min(old_x, x)
+                if (wall_x, y) in self.vertical_walls:
                     return False
-                if (min(old_x, x), y - 1) in self.vertical_walls:
+                if (wall_x, y - 1) in self.vertical_walls:
                     return False
-
             if y != old_y:
-                if (x, min(old_y, y)) in self.horizontal_walls:
+                wall_y = min(old_y, y)
+                if (x, wall_y) in self.horizontal_walls:
                     return False
-                if (x - 1, min(old_y, y)) in self.horizontal_walls:
+                if (x - 1, wall_y) in self.horizontal_walls:
                     return False
 
         elif action.action_type == ActionType.WALL_VERTICAL:
@@ -54,9 +96,19 @@ class QuoridorBoard:
             if (x, y) in self.horizontal_walls:
                 return False
             if (
-                (x - 1, y) in self.vertical_walls
+                (x, y - 1) in self.vertical_walls
                 or (x, y) in self.vertical_walls
-                or (x + 1, y) in self.vertical_walls
+                or (x, y + 1) in self.vertical_walls
+            ):
+                return False
+
+            new_vertical_walls = set(self.vertical_walls)
+            new_vertical_walls.add((x, y))
+
+            if not self.is_opened_walls(
+                player_positions=self.player_positions,
+                vertical_walls=new_vertical_walls,
+                horizontal_walls=self.horizontal_walls,
             ):
                 return False
 
@@ -76,7 +128,15 @@ class QuoridorBoard:
             ):
                 return False
 
-        # todo: 사실 벽으로 길을 막으면 안 됨
+            new_horizontal_walls = set(self.horizontal_walls)
+            new_horizontal_walls.add((x, y))
+
+            if not self.is_opened_walls(
+                player_positions=self.player_positions,
+                vertical_walls=self.vertical_walls,
+                horizontal_walls=new_horizontal_walls,
+            ):
+                return False
 
         return True
 
