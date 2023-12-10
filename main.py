@@ -12,13 +12,14 @@ from PyQt5.QtGui import QBrush, QColor
 from action import ActionType, QuoridorAction
 
 from board import QuoridorBoard
+from config import BOARD_SIZE, WALL_COUNT
 
 
 class QuoridorGUI(QMainWindow):
     def __init__(self):
         super().__init__()
 
-        self.board = QuoridorBoard()
+        self.board = QuoridorBoard(size=BOARD_SIZE, wall_count=WALL_COUNT)
         self.BOARD_SIZE = self.board.size
 
         for action in QuoridorAction.all_actions():
@@ -48,24 +49,32 @@ class QuoridorGUI(QMainWindow):
 
     def drawPlayers(self):
         player_colors = {1: Qt.red, 2: Qt.blue}
-        for player, position in self.board.player_positions.items():
-            x, y = position
-            player_circle = QGraphicsEllipseItem(
-                x * 50 + 5, (self.BOARD_SIZE - y - 1) * 50 + 5, 40, 40
-            )
-            player_circle.setBrush(QBrush(player_colors[player]))
-            self.scene.addItem(player_circle)
+        state = self.board.state()
+
+        x, y = state["my_position"]
+        player_circle = QGraphicsEllipseItem(
+            x * 50 + 5, (self.BOARD_SIZE - y - 1) * 50 + 5, 40, 40
+        )
+        player_circle.setBrush(QBrush(player_colors[1]))
+        self.scene.addItem(player_circle)
+
+        enemy_x, enemy_y = state["enemy_position"]
+        enemy_circle = QGraphicsEllipseItem(
+            enemy_x * 50 + 5, (self.BOARD_SIZE - enemy_y - 1) * 50 + 5, 40, 40
+        )
+        enemy_circle.setBrush(QBrush(player_colors[2]))
+        self.scene.addItem(enemy_circle)
 
     def drawWalls(self):
         wall_color = Qt.black
-        for wall_x, wall_y in self.board.vertical_walls:
+        for wall_x, wall_y in self.board.state()["vertical_walls"]:
             wall_rect = QGraphicsRectItem(
                 (wall_x + 1) * 50 - 2, (self.BOARD_SIZE - wall_y - 2) * 50, 4, 100
             )
             wall_rect.setBrush(QBrush(wall_color))
             self.scene.addItem(wall_rect)
 
-        for wall_x, wall_y in self.board.horizontal_walls:
+        for wall_x, wall_y in self.board.state()["horizontal_walls"]:
             wall_rect = QGraphicsRectItem(
                 wall_x * 50, (self.BOARD_SIZE - wall_y - 1) * 50 - 2, 100, 4
             )
