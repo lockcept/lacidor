@@ -13,6 +13,7 @@ from action import ActionType, QuoridorAction
 
 from board import QuoridorBoard
 from config import BOARD_SIZE, WALL_COUNT
+from example import example_actions_1
 
 
 class QuoridorGUI(QMainWindow):
@@ -22,9 +23,13 @@ class QuoridorGUI(QMainWindow):
         self.board = QuoridorBoard(size=BOARD_SIZE, wall_count=WALL_COUNT)
         self.BOARD_SIZE = self.board.size
 
+        example_actions_1(board=self.board)
+
         for action in QuoridorAction.all_actions():
             if self.board.is_valid_action(player=1, action=action):
                 print(action)
+
+        print(self.board.state_str())
 
         self.initUI()
 
