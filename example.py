@@ -83,3 +83,4 @@ def example_actions_1(board: QuoridorBoard):
         player=1,
         action=QuoridorAction(action_type=ActionType.WALL_HORIZONTAL, x=6, y=1),
     )
+    print(board.bfs_distance_player(player=1))

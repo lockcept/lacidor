@@ -33,12 +33,13 @@ class QuoridorBoard:
             ],
         )
 
-    def bfs_distance(self, position):
+    def bfs_distance_player(self, player):
+        player_positions = self.pieces[player - 1]
+        player_place = np.argwhere(player_positions == 1)[0]
         vertical_walls = self.pieces[2]
         horizontal_walls = self.pieces[3]
         return self.bfs_distance_with_walls(
-            self,
-            position,
+            position=tuple(player_place),
             vertical_walls=vertical_walls,
             horizontal_walls=horizontal_walls,
         )
@@ -81,14 +82,15 @@ class QuoridorBoard:
     def is_opened_walls(self, vertical_walls, horizontal_walls, player_positions):
         target_y = {1: self.size - 1, 2: 0}
 
-        for player, (x, y) in enumerate(player_positions):
+        for index, (x, y) in enumerate(player_positions):
+            player = index + 1
             distances = self.bfs_distance_with_walls(
                 position=(x, y),
                 vertical_walls=vertical_walls,
                 horizontal_walls=horizontal_walls,
             )
 
-            if not np.any(distances[:, target_y[player + 1]] >= 0):
+            if not np.any(distances[:, target_y[player]] != -1):
                 return False
 
         return True
@@ -303,4 +305,24 @@ class QuoridorBoard:
 
     def state_str(self, player=1):
         state = self.state(player=player)
-        return str(state)
+
+        def coordinates_to_string(coordinates):
+            return ",".join(
+                ["({},{})".format(coord[0], coord[1]) for coord in coordinates]
+            )
+
+        joined_string = (
+            coordinates_to_string([state["my_position"]])
+            + "/"
+            + coordinates_to_string([state["enemy_position"]])
+            + "/"
+            + coordinates_to_string(state["vertical_walls"])
+            + "/"
+            + coordinates_to_string(state["horizontal_walls"])
+            + "/"
+            + str(int(state["my_wall_count"]))
+            + "/"
+            + str(int(state["enemy_wall_count"]))
+        )
+
+        return joined_string
